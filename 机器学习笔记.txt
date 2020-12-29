@@ -1,0 +1,254 @@
+mjk一、k近邻算法（案例流程  获取数据-》数据基本处理-》特征工程-》机器学习（模型训练）-》模型评估）
+  1.数据可视化
+    import seaborn
+    seaborn.lmplot()
+    	参数：
+	  x,y 具体x轴，y轴数据的索引值
+	  data    具体数据
+	  hue   目标值是什么
+	  fit_reg    是否进行线性拟合
+  2.数据集的划分
+    api:sklearn.model_selection.train_test_split()
+	参数：
+	  x   特征值
+	  y  目标值
+	  test_size 测试集大小
+	  random_state 随机数种子
+	返回值:
+	  训练集特征值，测试集特征值，训练集目标值，测试集目标值
+  3.特征工程-特征预处理
+    归一化、标准化
+    api:sklearn.preprocessing
+    归一化：对原始数据进行变换把数据映射到（默认[0,1]）之间
+    	api:
+	  sklearn.processing.MinMaxScaler(feature_range=(0,1)......)
+	  feature_range    自己指定范围，默认0-1
+	总结：
+	  鲁棒性比较差（容易受到异常点的影响）
+	  知识和传统精确小数据场景（以后不会用）
+    标准化：对原始数据进行变换，把数据变换到均值为0，标准差为1范围内
+	api:
+	  sklearn.preprocessing.StandardScaler
+	总结：
+	  异常值影响小
+	 适合现代嘈杂大数据嘈杂（以后就用这个）
+  3.交叉验证和网格搜索
+    交叉验证：将拿到的训练数据，分为训练和验证集
+	几折交叉验证
+	为了让被评估的模型更加准确可信
+	交叉验证不能提高模型的准确性
+    网格搜索：sklearn中，需要手动指定的参数，叫超参数
+	网格搜索就是把这些超参数的值，通过字典的形式传递进去，然后进行选择最优值
+    api：sklearn.model_selection.GridSearchCV(estimator,param_grid=None,cv=None)
+	estimator   选择了哪个训练模型
+	param_grid   需要传递的超参数
+	cv    几折交叉验证
+二、线性回归
+  利用回归方程（函数）对一个或多个自变量（特征值）和因变量（目标值）之间关系进行建模的一种分析方法
+  分类：
+    线性关系  非线性关系
+  api：sklearn.linear_model.LinerRegression()
+	属性:
+	   LinerRegression.coef_    系数
+  1.线性回归的损失和优化
+    损失
+	最小二乘法
+    优化
+	正规方程
+	梯度下降法
+    正规方程
+	利用矩阵的逆，转置进行一步求解
+	只适合样本和特征比较少的情况
+    2.梯度下降
+	α   就是步长，步长太小，下山太慢，步长太大，容易跳过极小值点
+        为什么梯度要加一个负号
+	梯度方向是上升最快方向，负号就是下降最快方向
+        1. 全梯度下降算法（FG）   2 .随机梯度下降算法（SG） 3.小批量梯度下降算法（mini-bantch） 4.随机平均梯度下降算法（SAG）
+    选择
+        小规模数据
+	LinearRegression（不能解决拟合问题）
+	岭回归
+        大规模数据
+	SGDRegressor
+   3.api
+         正规方程    
+	sklearn.linear_model.LinearRegression(fit_intercept=True)  
+	不需要学习率、一次运算得出、需要计算方程，时间复杂度高O（n3）
+         梯度下降    
+	sklearn.linear_model.SGDRegressor(loss='square_loss',fit_intercept=True,learning_rate='invscaling',eta0=0.01)     
+	需要选择学习率、需要迭代求解、特征数量较大可以使用
+	参数：
+		loss  损失（最小二乘）
+		learning_rate  学习率    一般都是动态更新，可以指定为一个常数，不推荐
+    4.欠拟合和过拟合
+        欠拟合
+	在训练集表现不好，在测试集上表现不好
+	解决方法：继续学习 a.添加其他特征项  b.添加多项式特征
+        过拟合
+	在训练集上表现好，在测试集上表现不好
+	解决办法：a.重新清洗数据集 b.增大数据的训练量  c.正则化  d.减少特征维度
+        正则化   
+	通过限制高次项的系数进行防止过拟合
+	L1正则化：直接把高次项前面的系数变为0     Lasso回归：对系数值进行绝对值处理，绝对值在顶点不可导，进行过程中产生很多0，最后得到结果：稀疏矩阵
+	L2正则化：把高次项系数前面的系数变成特别小的值   岭回归 Ridege Regression：系数前面添加平方向，限制系数大小，α越小，系数越大，α越大，系数越小
+	弹性网络  Elastic Net：是前两个内容的综合，设置了一个r，如果r=0--岭回归,r=1 --Lasso回归
+    5.线性回归的改进   岭回归
+        api：
+	sklearn.linear_model.Ridge(alpha=1.0,fit_intercept=True,solver='auto',normalize=False)
+	alpha   正则化
+	normalize   默认封装了，对数据进行标准化处理
+        具有L2正则化的线性回归
+   6.模型保存和加载
+        api: sklearn.externals.joblib
+
+三、逻辑回归
+    1.概念：解决的是一个二分类问题，逻辑回归的输入是线性回归的输出
+    api: sklearn.linear_model.LogisticRegression()
+    注意：回归、分类api有时候是可以混合使用的
+    2.分类评估
+    api:  sklearn.metrics.classification_report()
+    3.roc曲线和auc指标
+         这个指标主要用于评价不平衡的二分类问题
+        api：sklearn.metrics.roc_auc_score(y_true,y_score)
+	y_true    要把正例转换为1，反例转换为0
+四、决策树算法
+    1.决策树分类原理
+        1.熵：用于衡量一个对象的有序程度
+        2.信息熵：从完整性和有序性进行描述
+        3.把信息转换成熵值    -plogp
+    2.信息增益
+        信息增益越大，我们优先选择这个属性进行计算
+        信息增益总是选择属性总类别比较多的进行划分
+    3.信息增益率
+        维持了一个分离信息度量，通过这个分离信息度量当分母，进行限制
+    4.基尼增益
+        基尼值：从数据集D中随机抽取两个样本，其类别标志不一致的概率。Gini(D)值越小，数据集D的纯度越高
+        基尼指数：选择是划分后基尼系数最小的属性作为最优划分属性
+        基尼增益：选择基尼增益最大的点，进行优化划分
+    5.三种算法对比：
+        ID3 算法：采用信息增益作为评价标准，选择属性离散型的数据，缺点是选择取值较多的属性
+        C4.5  算法： 用信息增益率来选择属性，可以处理连续数值型属性，缺点只适合能驻留于内存的数据集
+        CART 算法：C4.5不一定是二叉树，但CART一定是二叉树，是信息增益的简化版本
+    6.cart剪枝
+        噪声、样本冲突、即错误的样本数据
+        特征即属性不能完全作为分类标准
+        巧合的规律性，数据量不够大
+        剪枝方法：预剪枝（限制节点最小样本数，制定数据高度，制定熵值最小值），后剪枝（构建完成之后，再从下往上剪枝）
+    7.特征工程-特征提取
+        将任意数据转换为可用于机器学习的数字特征
+         分类：字典特征提取（特征离散化）   文本特征提取   图像特征提取
+         api:sklearn.feature_extraction
+        7.1 字典特征提取：对类别型数据进行转换
+         	api:sklearn.feature_extraction.DictVectorizer(sparse=True)
+	sparse矩阵 节省内容  提高读取效率
+        7.2 文本特征提取（英文）
+        	api:sklearn.feature_extraction.text.CountVectorizer(stop_words=[])
+		stop_words  停用字母
+		单个字母，标点符号不做统计
+        7.3 中文特征提取
+	在中文文本提取特征之前，需要对文章进行分词（jieba）
+	依旧可以使用停用词，进行词语限制
+        7.4 tfidf
+	如果某个词或短语在一篇文章中出现的频率高，并且在其它文章中很少出现，则认为此词或者短语具有很好的类别区分能力，适合用来分类
+	tf   词频
+	idf  逆向文档频率
+	api:sklearn.feature_extraction.text.TfidfVectorizer
+	注意：分类机器学习算法进行文章分类中前期数据处理方式
+    8.决策树算法api
+        sklearn.tree.DecisonTreeClassfier(criterion='gini',max_depth=None,random_state=None)
+	criterion   特征选择标准
+	min_samples_split   内部节点再划分所需最小样本数
+	min_samples_leaf   叶子节点最少样本数
+	max_depth   决策树最大深度
+        优点：简单易理解和解释，树木可视化
+        缺点：决策树学习者可以创建不能很好地推广数据过于复杂的数，容易发生过拟合
+        改进：剪枝cart算法、随机森林（集成学习的一种）
+五、集成学习
+    1.含义：超级个体和弱者联盟对比，后者更优
+    2.机器学习两个核心任务
+        解决欠拟合问题
+	若若组合变强  boosting
+        解决过拟合问题  
+	互相遏制变壮  Bagging
+    Bagging集成过程  1.采样：从所有样本里面，采样一部分    2.学习：训练弱学习器    3.集成 ：使用平权投票
+    3.随机森林
+        随机森林 = Bagging + 决策树
+        流程：
+	1.随机选取m条数据    2.随机选取k个特征  3.训练决策树   4.重复1-3     5.对上面的弱决策树进行平权投票
+        注意：随机选取样本，且是有放回的抽取；选取特征的时候，选择m<M   M是所有特征数
+        api：sklearn.ensemble.RandomForestClassfier()
+        bagging优点
+	Bagging + 决策树/线性回归/逻辑回归
+	深度学习。。。=bagging集成学习方法
+	均可在原有算法上提高约2%左右的泛化正确率；简单，方便，通用
+        Boosting
+	Boosting集成原理：随着学习的积累从弱到强
+	实现过程：
+		1.初始化训练数据权重，初始权重是相等的
+		2.通过这个学习器，计算错误率
+		3.计算这个学习器的投票权重
+		4.对每个样本进行重新赋权
+		5.重复1-4
+		6.对构建后的最后的学习器进行加权投票
+        bagging和boosting集成的区别：
+	数据方面：bagging重新采样；boosting对数据进行权重调整
+	投票方面：bagging平权；boosting加权
+	学习顺序方面：bagging并行；boosting串行
+	主要作用：bagging过拟合；boosting欠拟合
+    4.GBDT
+	梯度提升决策树
+	GBDT = 梯度下降 + Boosting + 决策树
+    5.XGBoost
+	XGBoost = 二阶泰勒展开 + boosting + 决策树 + 正则化
+六、聚类算法
+    1.聚类算法分类
+	粗聚类、细聚类
+    2.定义：一种典型的无监督学习算法，主要用于将相似的样本自动归类到一个类别中。
+	计算样本和样本之间的相似性，一般使用欧氏距离。
+    3.聚类算法api
+        api：sklearn.cluster.KMeans(n_clusters=8)
+	n_clusters   开始聚类的中心数
+    4.聚类算法实现流程
+        k-means
+        k   选几个中心点
+        means   均值计算
+        流程：
+	事先确定常数K，常数K意味着最终的聚类类别数
+	首先随机选定初始点为质心，并通过计算每个样本与质心之间的相似度（欧式距离），将样本点归到最相似的类中
+	接着，重新计算每个类的质心，重复这样过程，直到质心不变
+	最终确定每个样本所属的类别及每个类的质心
+        注意：K-means由于要计算质心到每个样本的距离，所以其收敛速度比较慢
+    5.模型评估
+        sse：误差平方和，值越小越好
+        肘部法：下降率突然变缓时即认为是最佳的k值
+        sc系数：取值为[-1,1]，其值越大越好
+        ch系数：分数s高则聚类效果越好  ch需要达到的目的，用尽量少的类别聚类尽量多的样本，同时获得最好的聚类效果
+    6.算法优化
+        k_means   简单易理解；特别容易陷入到局部最优解
+        canopy    通过绘制同心圆，进行k值选择筛选；需要确定同心圆的半径t1、t2
+        k_means++   距离平方进行求解；保证下一个质心到当前质心，距离最远
+        二分k-means   通过误差平方和设置阈值，然后进行划分
+        k-medoids   和kmeans选取中心点的方式不同；通过从当前点选择中心点进行判断
+        kenel kmeans  映射到高维空间
+        ISODATA    动态聚类  可以更改k值大小
+        Mini-batch k-means   大数据集分批聚类
+    7.特征降维
+        含义：就是改变特征值，选择哪列保留，哪列删除。目标是得到一组“不相关”的主变量
+        降维的两种方式：特征选择、主成分分析
+        特征选择：剔除数据中的冗余变量
+ 	方法：filter（过滤式）   embedded（嵌入书）
+        低方差特征过滤：把方差比较小的某一列删除
+	api：sklearn.feature_selection.VarianceThreshold(threshold=0.0)
+	删除所有低方差特征，注意参数threshold一定要进行值的指定
+        相关系数
+	主要实现方式：皮尔逊相关系数、斯皮尔曼相关系数
+	皮尔逊相关系数：通过具体值的大小进行计算，相对复杂
+		api：scipy.stats.pearsonr
+		返回值越接近|1|，相关性越强，越接近0，相关性越弱
+	斯皮尔曼相关系数：通过等级差进行计算，比上一个简单
+		api：scipy.stats.spearmanr
+		返回值，越接近|1|，相关性越强；越接近0，相关性越弱
+    8.pca
+        定义：高维的数据转换为低维数据，产生了新的变量
+        api：sklearn.decomposition.PCA(n_components=None)
+	n_components   整数表示降低到几维，小数表示保留百分之多少的信息
